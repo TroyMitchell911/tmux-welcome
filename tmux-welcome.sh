@@ -2,6 +2,44 @@
 
 clear
 
+# 定义颜色和样式
+red=$(tput setaf 1)
+green=$(tput setaf 2)
+blue=$(tput setaf 4)
+yellow=$(tput setaf 3)
+bold=$(tput bold)
+reset=$(tput sgr0)
+clear=$(tput clear)
+
+# 获取终端尺寸
+rows=$(tput lines)
+cols=$(tput cols)
+
+# 居中显示文本的函数
+center_text() {
+  local text="$1"
+  local col=$(( (cols - ${#text}) / 2 ))
+  echo -e "$(printf '%*s' $col '' )$text"
+}
+
+# 清屏
+echo -e "$clear"
+
+# 显示banner
+banner=(
+  "██╗    ██╗███████╗██╗      ██████╗ ██████╗ ███╗   ███╗███████╗    ████████╗ ██████╗     ████████╗███╗   ███╗██╗   ██╗██╗  ██╗"
+  "██║    ██║██╔════╝██║     ██╔════╝██╔═══██╗████╗ ████║██╔════╝    ╚══██╔══╝██╔═══██╗    ╚══██╔══╝████╗ ████║██║   ██║╚██╗██╔╝"
+  "██║ █╗ ██║█████╗  ██║     ██║     ██║   ██║██╔████╔██║█████╗         ██║   ██║   ██║       ██║   ██╔████╔██║██║   ██║ ╚███╔╝ "
+  "██║███╗██║██╔══╝  ██║     ██║     ██║   ██║██║╚██╔╝██║██╔══╝         ██║   ██║   ██║       ██║   ██║╚██╔╝██║██║   ██║ ██╔██╗ "
+  "╚███╔███╔╝███████╗███████╗╚██████╗╚██████╔╝██║ ╚═╝ ██║███████╗       ██║   ╚██████╔╝       ██║   ██║ ╚═╝ ██║╚██████╔╝██╔╝ ██╗"
+  " ╚══╝╚══╝ ╚══════╝╚══════╝ ╚═════╝ ╚═════╝ ╚═╝     ╚═╝╚══════╝       ╚═╝    ╚═════╝        ╚═╝   ╚═╝     ╚═╝ ╚═════╝ ╚═╝  ╚═╝"
+)
+
+# 居中显示banner
+for line in "${banner[@]}"; do
+  echo -e "$(center_text "$line")"
+done
+
 # 定义保存文件路径
 resurrect_file="$HOME/.tmux/resurrect/last"
 
@@ -15,7 +53,6 @@ if [ -f "$resurrect_file" ]; then
 
   # 从保存文件中提取窗口信息
   saved_windows=$(grep '^window' $resurrect_file | awk '{print $2}')
-  # echo $saved_windows
 
   # 获取当前的 tmux 会话信息
   current_sessions=$(tmux ls | awk -F: '{print $1}')
@@ -45,9 +82,7 @@ read -p "Enter the name of the new tmux session: " session_name
 
 # 创建新的 tmux 会话 或者附加
 if tmux ls 2>/dev/null | grep -q "^$session_name:"; then
-  echo "Attaching to existing tmux session '$session_name'."
   tmux attach -t "$session_name"
 else
-  echo "No existing session found. Creating new tmux session '$session_name'."
   tmux new -s "$session_name"
 fi
