@@ -77,8 +77,57 @@ if [ -f "$resurrect_file" ]; then
   tmux kill-session -t temp_session
 fi
 
-# 提示用户输入会话名称
-read -p "Enter the name of the new tmux session: " session_name
+# 获取终端尺寸
+cols=$(tput cols)
+
+# 输入提示
+prompt="Please enter your session-name:"
+
+# 计算提示的长度
+prompt_length=${#prompt}
+
+# 计算提示居中后的列位置
+prompt_col=$(( (cols - prompt_length) / 2 ))
+
+# 输出提示
+echo -e "$(printf '%*s' $prompt_col '')$prompt"
+
+# 计算光标居中的列位置（与提示对齐）
+cursor_col=$(( prompt_col + prompt_length / 2 ))
+cursor_row=9
+
+# 将光标移动到提示词正下方，并居中
+tput cup $cursor_row $cursor_col
+
+# 读取用户输入的字符
+session_name=""
+tput civis
+while IFS= read -r -s -n 1 char; do
+    ascii_value=$(printf "%d" "'$char")
+    if [[ $char == $'\x7f' ]]; then  # 处理退格键
+	       session_name="${session_name%?}"  # 删除最后一个字符
+        # 用空格填充删除的位置
+        session_length=${#session_name}
+        session_col=$(( (cols - session_length) / 2 ))
+        tput cup $cursor_row 0
+        echo -e "$(printf '%*s' $session_col '')$session_name"  # 重新输出
+        # 清除被删除字符后的位置
+        tput cup $cursor_row $((session_col + session_length))  # 移动光标到字符串末尾
+        echo -n " "  # 输出空格以清除
+        tput cup $cursor_row $session_col  # 移动光标回到正确位置
+    elif [[ $ascii_value == 0 ]]; then  # 处理回车键，结束输入
+        break
+    else
+        session_name+="$char"  # 添加输入字符到变量
+    fi
+
+    session_length=${#session_name}
+    # 计算提示居中后的列位置
+    session_col=$(( (cols - session_length) / 2 ))
+    tput cup $cursor_row 0
+    echo -e "$(printf '%*s' $session_col '')$session_name"
+done
+ tput cnorm
 
 # 创建新的 tmux 会话 或者附加
 if tmux ls 2>/dev/null | grep -q "^$session_name:"; then
