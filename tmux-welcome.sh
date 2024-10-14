@@ -42,12 +42,10 @@ done
 
 # 定义保存文件路径
 resurrect_file="$HOME/.tmux/resurrect/last"
+check_restored=true
 
-# 检查保存文件是否存在
-if [ -f "$resurrect_file" ]; then
-  # 创建一个临时tmux会话
-  tmux new-session -d -s temp_session
-
+function check_restored_func()
+{
   # 初始化变量
   check_restored=true
 
@@ -60,17 +58,31 @@ if [ -f "$resurrect_file" ]; then
   # 检查保存的窗口是否都恢复
   for window in $saved_windows; do
     if ! echo "$current_sessions" | grep -q "^$window$"; then
-      # echo "Window $window has not been restored."
       check_restored=false
+      break
     fi
   done
+}
+
+# 检查保存文件是否存在
+if [ -f "$resurrect_file" ]; then
+  # 创建一个临时tmux会话
+  tmux new-session -d -s temp_session
+
+  check_restored_func
 
   # 输出恢复状态
   if [ "$check_restored" = false ]; then
-    # 发送恢复命令 (prefix + Ctrl + r)
-    tmux send-keys -t temp_session C-b C-r
+    # 恢复
+    tmux send-keys -t temp_session '~/.tmux/plugins/tmux-resurrect/scripts/restore.sh' C-m
     # 等待恢复完成 (可调整等待时间，根据恢复速度)
-    sleep 2
+    while true; do
+	    check_restored_func
+	    if [ "$check_restored" = true ]; then
+		    break;
+	    fi
+	    sleep 1
+    done
   fi
 
   # 杀掉临时的会话
