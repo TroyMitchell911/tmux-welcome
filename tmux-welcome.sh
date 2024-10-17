@@ -139,7 +139,14 @@ while IFS= read -r -s -n 1 char; do
     tput cup $cursor_row 0
     echo -e "$(printf '%*s' $session_col '')$session_name"
 done
- tput cnorm
+
+tput cnorm
+
+if [ "$session_name" = "shell" ]; then
+    # 打开默认的 Shell
+    $SHELL
+    exit
+fi
 
 # 创建新的 tmux 会话 或者附加
 if tmux ls 2>/dev/null | grep -q "^$session_name:"; then
