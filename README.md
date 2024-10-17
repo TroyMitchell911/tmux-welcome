@@ -6,8 +6,10 @@ A welcome screen script for tmux
 Link it:
 
 ```bash
-$ sudo ln -s tmux-welcome.sh /usr/local/bin/tmux-welcome
+$ sudo ln -s /your/pathtmux-welcome.sh /usr/local/bin/tmux-welcome
 ```
+
+**Note: Please use the absolute path, otherwise use the cp command**
 
 Then set the `preferences`, in the` command` of the `configuration profile`, choose to `run a custom command instead of a shell`.
 
