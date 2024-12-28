@@ -142,7 +142,7 @@ done
 
 tput cnorm
 
-if [ "$session_name" = "shell" ]; then
+if [ -z "$session_name" ] || [ "$session_name" = "shell" ]; then
     # 打开默认的 Shell
     $SHELL
     exit
